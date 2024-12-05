@@ -1,0 +1,8 @@
+
+version: '3'
+
+tasks:
+  vet:
+    go vet ./...
+  lint:
+    golangci-lint run ./...

@@ -19,13 +19,13 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 	conn, err := amqp.Dial(cfg.GetRabbitDSN())
 
 	if err != nil {
-		slog.Error("Failed to connect to RabbitMQ: %s", err)
+		slog.Error("Failed to connect to RabbitMQ: %s", "error", err)
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		slog.Error("Failed to open a channel: %s", err)
+		slog.Error("Failed to open a channel: %s", "error", err)
 	}
 	defer ch.Close()
 
