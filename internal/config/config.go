@@ -7,22 +7,23 @@ import (
 )
 
 type Config struct {
-	SmtpHost        string `env:"SMTP_HOST"`
-	SmtpPort        int    `env:"SMTP_PORT"`
-	SmtpUsername    string `env:"SMTP_USERNAME"`
-	SmtpPassword    string `env:"SMTP_PASSWORD"`
-	RabbitHost      string `env:"RABBIT_HOST"`
-	RabbitPort      int    `env:"RABBIT_PORT"`
-	RabbitUsername  string `env:"RABBIT_USERNAME"`
-	RabbitPassword  string `env:"RABBIT_PASSWORD"`
-	RabbitQueueName string `env:"RABBIT_QUEUE_NAME"`
-	MongoUsername   string `env:"MONGO_USERNAME"`
-	MongoPassword   string `env:"MONGO_PASSWORD"`
-	MongoHost       string `env:"MONGO_HOST"`
-	MongoPort       string `env:"MONGO_PORT"`
-	MongoDatabase   string `env:"MONGO_DATABASE"`
-	MongoCollection string `env:"MONGO_COLLECTION"`
-	LogLevel        string `env:"LOG_LEVEL"`
+	SmtpHost                    string `env:"SMTP_HOST"`
+	SmtpPort                    int    `env:"SMTP_PORT"`
+	SmtpUsername                string `env:"SMTP_USERNAME"`
+	SmtpPassword                string `env:"SMTP_PASSWORD"`
+	RabbitHost                  string `env:"RABBIT_HOST"`
+	RabbitPort                  int    `env:"RABBIT_PORT"`
+	RabbitUsername              string `env:"RABBIT_USERNAME"`
+	RabbitPassword              string `env:"RABBIT_PASSWORD"`
+	RabbitNotificationQueueName string `env:"RABBIT_NOTIFICATION_QUEUE_NAME"`
+	RabbitEmailConfirmQueueName string `env:"RABBIT_EMAIL_CONFIRM_QUEUE_NAME"`
+	MongoUsername               string `env:"MONGO_USERNAME"`
+	MongoPassword               string `env:"MONGO_PASSWORD"`
+	MongoHost                   string `env:"MONGO_HOST"`
+	MongoPort                   string `env:"MONGO_PORT"`
+	MongoDatabase               string `env:"MONGO_DATABASE"`
+	MongoCollection             string `env:"MONGO_COLLECTION"`
+	LogLevel                    string `env:"LOG_LEVEL"`
 }
 
 func Parse(s string) (*Config, error) {

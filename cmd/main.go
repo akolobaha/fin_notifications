@@ -4,6 +4,7 @@ import (
 	"context"
 	"fin_notifications/cmd/commands"
 	"fin_notifications/internal/config"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -26,6 +27,10 @@ func main() {
 		cancel()
 	}()
 
-	commands.ReadFromQueue(ctx, cfg)
+	err = commands.ReadFromQueue(ctx, cfg)
+	if err != nil {
+		slog.Error("Error reading from queue", "error", err)
+		return
+	}
 
 }
