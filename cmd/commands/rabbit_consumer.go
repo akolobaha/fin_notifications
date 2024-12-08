@@ -10,6 +10,7 @@ import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log/slog"
+	"time"
 )
 
 func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
@@ -18,22 +19,23 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 	mongoCollectionReports := mongoClient.Database(cfg.MongoDatabase).Collection(cfg.MongoCollection)
 
 	conn, err := amqp.Dial(cfg.GetRabbitDSN())
-
 	if err != nil {
 		slog.Error("Failed to connect to RabbitMQ: %s", "error", err)
+		return err
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
 		slog.Error("Failed to open a channel: %s", "error", err)
+		return err
 	}
 	defer ch.Close()
 
 	msgsNotification, err := ch.Consume(
 		cfg.RabbitNotificationQueueName,
 		"",
-		true, // auto-ack
+		false,
 		false,
 		false,
 		false,
@@ -43,7 +45,7 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 	msgsEmailConfirm, err := ch.Consume(
 		cfg.RabbitEmailConfirmQueueName,
 		"",
-		true, // auto-ack
+		false,
 		false,
 		false,
 		false,
@@ -73,6 +75,12 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 
 			slog.Info("Отчет успешно сохранен в журнал сообщений", one.InsertedID)
 
+			// Подтверждение сообщения после успешной обработки
+			if err := msg.Ack(false); err != nil {
+				slog.Error("Failed to ack message: %s", "error", err)
+				return err
+			}
+
 		case msg := <-msgsEmailConfirm:
 			var emailConfirm entity.EmailConfirm
 			err := json.Unmarshal(msg.Body, &emailConfirm)
@@ -80,7 +88,7 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 				return err
 			}
 
-			subject := `Подтверждения email на сатйе "Робот для инвестора"`
+			subject := "Подтверждение email на сайте 'Робот для инвестора'"
 			text := fmt.Sprintf("Для подтверждения email перейдите по ссылке: %s", emailConfirm.Url)
 			err = email.NotifyByEmail(subject, text, []string{emailConfirm.Email})
 			if err != nil {
@@ -89,8 +97,15 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 
 			slog.Info("Уведомление о подтверждении email успешно отправлено пользователю")
 
+			// Подтверждение сообщения после успешной обработки
+			if err := msg.Ack(false); err != nil {
+				slog.Error("Failed to ack message: %s", "error", err)
+				return err
+			}
+
 		case <-ctx.Done():
 			slog.Info("Сервис обработки данных остановлен")
+			time.Sleep(5 * time.Second)
 			return nil
 		}
 	}

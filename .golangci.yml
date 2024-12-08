@@ -1,0 +1,10 @@
+linters:
+  enable:
+    - errcheck
+    - revive
+
+issues:
+  exclude-dirs:
+    - vendor
+    - lib/
+    - go/pkg/mod
