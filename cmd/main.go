@@ -4,13 +4,18 @@ import (
 	"context"
 	"fin_notifications/cmd/commands"
 	"fin_notifications/internal/config"
-	"log/slog"
+	"fin_notifications/internal/log"
+	"fin_notifications/internal/monitoring"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 const defaultEnvFilePath = ".env"
+
+func init() {
+	monitoring.RegisterPrometheus()
+}
 
 func main() {
 	cfg, err := config.Parse(defaultEnvFilePath)
@@ -19,6 +24,7 @@ func main() {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	monitoring.RunPrometheusServer(cfg.GetPrometheusURL())
 
 	go func() {
 		exit := make(chan os.Signal, 1)
@@ -29,7 +35,7 @@ func main() {
 
 	err = commands.ReadFromQueue(ctx, cfg)
 	if err != nil {
-		slog.Error("Error reading from queue", "error", err)
+		log.Error("Error reading from queue", err)
 		return
 	}
 

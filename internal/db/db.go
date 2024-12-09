@@ -3,11 +3,10 @@ package db
 import (
 	"context"
 	"fin_notifications/internal/config"
-	"fmt"
+	"fin_notifications/internal/log"
 	_ "github.com/lib/pq"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log/slog"
 )
 
 func GetMongoDbConnection(ctx context.Context, cfg *config.Config) *mongo.Client {
@@ -16,19 +15,13 @@ func GetMongoDbConnection(ctx context.Context, cfg *config.Config) *mongo.Client
 	client, err := mongo.Connect(ctx, clientOptions)
 
 	if err != nil {
-		slog.Error(err.Error())
+		log.Error("mongo connect: ", err)
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Error("mongo connect ping: ", err)
 	}
-
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		slog.Error(err.Error())
-	}
-	fmt.Println("Connected to MongoDB!")
 
 	return client
 }

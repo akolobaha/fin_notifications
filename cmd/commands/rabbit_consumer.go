@@ -7,9 +7,9 @@ import (
 	"fin_notifications/internal/db"
 	"fin_notifications/internal/email"
 	"fin_notifications/internal/entity"
+	"fin_notifications/internal/log"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"log/slog"
 	"time"
 )
 
@@ -20,14 +20,14 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 
 	conn, err := amqp.Dial(cfg.GetRabbitDSN())
 	if err != nil {
-		slog.Error("Failed to connect to RabbitMQ: %s", "error", err)
+		log.Error("Failed to connect to RabbitMQ: ", err)
 		return err
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		slog.Error("Failed to open a channel: %s", "error", err)
+		log.Error("Failed to open a channel: ", err)
 		return err
 	}
 	defer ch.Close()
@@ -73,11 +73,11 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 				return err
 			}
 
-			slog.Info("Отчет успешно сохранен в журнал сообщений", one.InsertedID)
+			log.Info(fmt.Sprintf("Отчет успешно сохранен в журнал сообщений %s", one.InsertedID))
 
 			// Подтверждение сообщения после успешной обработки
 			if err := msg.Ack(false); err != nil {
-				slog.Error("Failed to ack message: %s", "error", err)
+				log.Error("Failed to ack message: %s", err)
 				return err
 			}
 
@@ -95,16 +95,16 @@ func ReadFromQueue(ctx context.Context, cfg *config.Config) error {
 				return err
 			}
 
-			slog.Info("Уведомление о подтверждении email успешно отправлено пользователю")
+			log.Info("Уведомление о подтверждении email успешно отправлено пользователю")
 
 			// Подтверждение сообщения после успешной обработки
 			if err := msg.Ack(false); err != nil {
-				slog.Error("Failed to ack message: %s", "error", err)
+				log.Error("Failed to ack message: %s", err)
 				return err
 			}
 
 		case <-ctx.Done():
-			slog.Info("Сервис обработки данных остановлен")
+			log.Info("Сервис обработки данных остановлен")
 			time.Sleep(5 * time.Second)
 			return nil
 		}

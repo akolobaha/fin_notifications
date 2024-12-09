@@ -1,7 +1,7 @@
 package email
 
 import (
-	"log/slog"
+	"fin_notifications/internal/log"
 	"net/smtp"
 )
 
@@ -22,7 +22,7 @@ func NotifyByEmail(subject string, text string, to []string) error {
 		return err
 	}
 
-	slog.Info("Email sent successfully!")
+	log.Info("Email sent successfully!")
 
 	return nil
 }
